@@ -10,58 +10,29 @@ from mininet.node import CPULimitedHost
 from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
+from mininet.util import dumpNodeConnections
 from mininet.topo import Topo
 
 
-class Topology(Topo):
-
-    def __init__(self):
-        super(Topology, self).__init__()
-        self.graph = None
+class CustomTopology(Topo):
 
     def build(self):
 
-        # # parse internet topology zoo graph
-        # # note: requires at least 8GB of RAM
-        # self.graph = fnss.parse_topology_zoo('topology_zoo/AttMpls.graphml')
+        print "Building topology"
 
-        # build scale free graph with 5 nodes for testing
-        self.graph = nx.barabasi_albert_graph(n=5, m=2, seed=1234)
+        self.graph = nx.barabasi_albert_graph(n=3, m=1, seed=1234)
+        n = nx.number_of_nodes(self.graph)
+        host_id = 1
 
-        self.add_switches()
-        self.add_links()
+        for node_id in self.graph.nodes():
+            self.addSwitch('s%d' % node_id)
 
-    def add_switches(self):
-        # create switches and attach a host to the switch
-        # one host per switch
-        for node in self.graph.nodes():
-            # start index from 1
-            node = node + 1
-
-            # add switch
-            self.addSwitch('s%d' % node)
-
-            # add host
-            self.addHost('h%d' % node)
-
-            # add host -- switch link
-            self.addLink("s%d" % node, "h%d" % node)
-
-    def add_links(self):
+            # each host gets 50%/n of CPU
+            self.addHost('h%d' % node_id, cpu = 0.5/n)
+            self.addLink("s%d" % node_id, "h%d" % host_id)
+            host_id += 1
 
         for (u, v) in self.graph.edges():
-
-            # start index from 1
-            u = u + 1
-            v = v + 1
-
-            # # add TCLink parameters for mininet here
-            # # calculations according to Auto-Mininet paper by Grobmann et al.
-            # linkopts = {'bw': bandwidth, 'delay': delay, 'max_queue_size': 1000, 'use_htb': True}
-
-            # # add switch -- switch link
-            # self.addLink("s%d" % u, "s%d" % v, **linkopts)
-
             self.addLink("s%d" % u, "s%d" % v)
 
 
@@ -72,13 +43,37 @@ if __name__ == '__main__':
     parser.add_argument("--controller", help="ip address of sdn controller", default='127.0.0.1')
     args = parser.parse_args()
 
-    topology = Topology()
-    topology.build()
+    topology = CustomTopology()
 
-    net = Mininet(topo=topology, controller=None, host=CPULimitedHost, link=TCLink, switch=OVSSwitch, autoSetMacs=True)
-    net.addController('c1', controller=RemoteController, ip=args.controller, port=6633)
+    net = Mininet(topo=topology,
+                  controller=RemoteController('c1', ip=args.controller, port=6633),
+                  host=CPULimitedHost,
+                  link=TCLink,
+                  switch=OVSSwitch,
+                  autoSetMacs=True)
+
+    # disable ipv6
+    print "Disabling ipv6 on all switches and hosts"
+    for h in net.hosts:
+        print "disable ipv6"
+        h.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+        h.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+        h.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+
+    for sw in net.switches:
+        print "disable ipv6"
+        sw.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
+        sw.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
+        sw.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
+
+
     net.start()
+
+    print "Dumping host connections"
+    dumpNodeConnections(net.hosts)
+
     CLI(net)
+
     net.stop()
 
 
