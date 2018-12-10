@@ -1,0 +1,7 @@
+INFO:lib.forwarding:Started SpComponent with BarabasiAlbert topology
+INFO:lib.forwarding:Reading existing arp table for BarabasiAlbert topology
+INFO:dynamite:Started Dynamite Component with scheme Dynamite
+INFO:core:POX 0.5.0 (eel) is up.
+ERROR:openflow.of_01:Error 98 while binding 0.0.0.0:6633: Address already in use
+ERROR:openflow.of_01: You may have another controller running.
+ERROR:openflow.of_01: Use openflow.of_01 --port=<port> to run POX on another port.
