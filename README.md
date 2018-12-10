@@ -15,7 +15,7 @@ This directory contains some starter code for the POX + Mininet setup used in Sw
 From here on, you can add various functionality according to your requirements. I have intentionally kept the code simple so that it is easier to understand and modify. Some ideas for enhancements are:
 
  - The [fnss](https://fnss.github.io/) library can be utilized to read in various network topologies from  sources such as [CAIDA](http://www.caida.org/research/topology/#Datasets) and [Internet Topology Zoo](http://www.topology-zoo.org/).
- - Since `mininet/topology.py` and `sway/reactive_fwd` utilizes the [networkx](https://networkx.github.io/documentation/stable/index.html) library, you can utilize various algoriths present, such as Dijkstra, Bellman-Ford, K-shortest paths, etc.
+ - Since `mininet/topology.py` and `sway/reactive_fwd` utilizes the [networkx](https://networkx.github.io/documentation/stable/index.html) library, you can utilize various algorithms present, such as Dijkstra, Bellman-Ford, K-shortest paths, etc.
  - The [OpenNetMon](https://github.com/TUDelftNAS/SDN-OpenNetMon) module can be utilized to measure link delay, bandwidth etc. for QoS applications.
 
 
